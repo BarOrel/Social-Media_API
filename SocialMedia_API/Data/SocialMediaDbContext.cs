@@ -14,7 +14,10 @@ namespace SocialMedia_API.Data
         {
         }
         public virtual DbSet<Post>? Posts { get; set; }
-        public virtual DbSet<PostComment>? PostComments { get; set; }
+        public virtual DbSet<Comment>? Comments { get; set; }
+        public virtual DbSet<Follow>? Follows { get; set; }
+        public virtual DbSet<Like>? Likes { get; set; }
+        public virtual DbSet<Notification>? Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

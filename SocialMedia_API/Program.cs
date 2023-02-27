@@ -1,7 +1,11 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SocialMedia_API.Data;
 using SocialMedia_API.Data.Models;
+using SocialMedia_API.Data.Repository.Generic;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +19,22 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SocialMediaDbContext>(options =>
     options.UseSqlServer("Data Source=Desktop-MGPQKAT;Initial Catalog=SocialMediaDB;Integrated Security=True;Pooling=False;trustServerCertificate=true"));
 
+builder.Services.AddAuthentication(cnf =>
+{
+    cnf.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    cnf.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
+}).AddJwtBearer(options => {
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:Key"])),
+        ValidIssuer = builder.Configuration["Token:Issuer"],
+        ValidateIssuer = true,
+        ValidateAudience = false,
+    };
+});
 
 builder.Services.AddIdentity<User, IdentityRole>(options => {
     options.SignIn.RequireConfirmedAccount = false;
@@ -26,7 +45,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options => {
     .AddEntityFrameworkStores<SocialMediaDbContext>();
 
 
-
+builder.Services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 
 
