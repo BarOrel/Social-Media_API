@@ -1,7 +1,7 @@
 ﻿using SocialMedia_API.Data.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace SocialMedia_API.Data.Models.DTO
+namespace SocialMedia_API.Data.Models.DTO.User
 {
     public class RegisterDTO
     {
@@ -17,5 +17,6 @@ namespace SocialMedia_API.Data.Models.DTO
         public string Password { get; set; }
         [Required]
         public Gender Gender { get; set; }
+        public string ImageUrl { get; set; }
     }
 }

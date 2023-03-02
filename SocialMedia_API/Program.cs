@@ -5,7 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using SocialMedia_API.Data;
 using SocialMedia_API.Data.Models;
 using SocialMedia_API.Data.Repository.Generic;
+using SocialMedia_API.Services.PostService;
 using System.Text;
+using ToDoListPractice.Data.Services;
+using ToDoListPractice.Data.Services.JWT;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +49,8 @@ builder.Services.AddIdentity<User, IdentityRole>(options => {
 
 
 builder.Services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
+builder.Services.AddTransient<IJWTTokenService, JWTTokenService>();
+builder.Services.AddTransient<IPostService, PostService>();
 
 
 
