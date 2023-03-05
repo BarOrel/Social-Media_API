@@ -4,6 +4,8 @@ using SocialMedia_API.Data.Models.DTO;
 using SocialMedia_API.Data.Models;
 using SocialMedia_API.Data.Repository.Generic;
 using SocialMedia_API.Services.PostService;
+using System.Linq;
+using SocialMedia_API.Data.Models.Enums;
 
 namespace SocialMedia_API.Controllers
 {
@@ -16,14 +18,22 @@ namespace SocialMedia_API.Controllers
         private readonly IGenericRepository<Like> likeRepository;
         private readonly IGenericRepository<Comment> commentRepository;
         private readonly IPostService postService;
+        private readonly IGenericRepository<Follow> followRepository;
+        private readonly IGenericRepository<Notification> notificationRepository;
 
-        public PostController(IGenericRepository<Post> postRepository,UserManager<User> userManger, IGenericRepository<Like> LikeRepository, IGenericRepository<Comment> commentRepository,IPostService postService)
+        public PostController(IGenericRepository<Post> postRepository
+            ,UserManager<User> userManger, IGenericRepository<Like> LikeRepository
+            , IGenericRepository<Comment> commentRepository,IPostService postService
+            , IGenericRepository<Follow> followRepository
+            , IGenericRepository<Notification> notificationRepository)
         {
             this.postRepository = postRepository;
             this.userManger = userManger;
             likeRepository = LikeRepository;
             this.commentRepository = commentRepository;
             this.postService = postService;
+            this.followRepository = followRepository;
+            this.notificationRepository = notificationRepository;
         }
 
         [HttpPost]
@@ -51,6 +61,20 @@ namespace SocialMedia_API.Controllers
             var les = res.Any(n => n.UserId == like.UserId && n.PostId == like.PostId);
             if (les == false)
             {
+                Notification notification = new()
+                {
+                    CreatedTime = DateTime.Now,
+                    NotifierId = like.UserId,
+                    PostId= like.PostId,
+                    Type = NotificationType.Like   
+                };
+                notification.UserId = postRepository.GetById(like.PostId).Result.UserId;
+                
+                if (notification.UserId != notification.NotifierId)
+                    await notificationRepository.Insert(notification);
+                
+
+                
                 like.CreatedTime = DateTime.Now;
                 await likeRepository.Insert(like);
                 return Ok(true);
@@ -77,7 +101,6 @@ namespace SocialMedia_API.Controllers
         public async Task<IActionResult> GetPostById(int Id)
         {
             var post = await postService.GetPostDtoById(Id);
-            
             if (post != null)
                 return Ok(post);
             
@@ -88,7 +111,7 @@ namespace SocialMedia_API.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetPosts()
+        public async Task<IActionResult> Explore()
         {
             List<PostDTO> Posts = new();
             var res = await postRepository.GetAll();
@@ -130,6 +153,35 @@ namespace SocialMedia_API.Controllers
                 
                 Posts.Add(post);
             }
+            return Ok(Posts.OrderByDescending(n=>n.LikesCounter));
+        }
+
+
+        [HttpGet("GetFollowingPosts/{UserId}")]
+        public async Task<IActionResult> GetPosts(string UserId)
+        {
+
+            List<PostDTO> Posts = new();
+            var res = await postRepository.GetAll();
+            var followers = await followRepository.GetAll();
+
+            var posts = res
+                 .Where(p => followers
+                   .Where(f => f.FollowerId == UserId)
+                    .Select(f => f.FollowingId)
+                        .Contains(p.UserId))
+                            .ToList();
+
+            posts.AddRange(res.Where(n => n.UserId == UserId));
+           
+
+
+            foreach (var item in posts)
+            {
+                var post = await postService.GetPostDtoById(item.Id);
+                Posts.Add(post);
+            }
+
             return Ok(Posts.OrderByDescending(n=>n.Post.CreatedTime));
         }
     }

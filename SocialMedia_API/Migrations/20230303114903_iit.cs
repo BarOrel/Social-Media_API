@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SocialMedia_API.Migrations
 {
-    public partial class init : Migration
+    public partial class iit : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -33,8 +33,8 @@ namespace SocialMedia_API.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FollowerId = table.Column<int>(type: "int", nullable: false),
-                    FollowingId = table.Column<int>(type: "int", nullable: false),
+                    FollowerId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FollowingId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
