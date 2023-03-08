@@ -44,11 +44,39 @@ namespace SocialMedia_API.Controllers
             return Ok(post);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePost(int id)
+        {
+            var post = await postRepository.GetById(id);
+            var notifications = await notificationRepository.GetAll();
+            foreach (var item in notifications)
+            {
+                 await notificationRepository.Delete(item);
+
+            }
+            await postRepository.Delete(post);
+            return Ok(post);
+            
+        }
+
 
         [HttpPost("Comment")]
         public async Task<IActionResult> AddComment(Comment comment)
         {
             comment.CreatedTime = DateTime.Now;
+
+            Notification notification = new()
+            {
+                CreatedTime = DateTime.Now,
+                NotifierId = comment.UserId,
+                PostId = comment.PostId,
+                Type = NotificationType.Comment
+            };
+            notification.UserId = postRepository.GetById(comment.PostId).Result.UserId;
+
+            if (notification.UserId != notification.NotifierId)
+                await notificationRepository.Insert(notification);
+
             await commentRepository.Insert(comment);
             return Ok(comment);
           

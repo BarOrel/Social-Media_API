@@ -136,6 +136,31 @@ namespace SocialMedia_API.Controllers
             return BadRequest();
         }
 
+       
+        [HttpGet("Friends/{UserId}")]
+        public async Task<IActionResult> GetFriends(string UserId)
+        {
+            var res = await followRepository.GetAll();
+            var mutualFollowers = res
+             .Where(f1 => f1.FollowingId == UserId)
+       .Join(res,
+           f1 => f1.FollowerId,
+           f2 => f2.FollowingId,
+           (f1, f2) => f2.FollowerId)
+       .Join(res,
+           f2 => f2,
+           f3 => f3.FollowingId,
+           (f2, f3) => f3.FollowerId)
+       .Distinct()
+       .ToList();
+            return Ok(mutualFollowers);
+        }
+
+
+
+
+
+
 
         [HttpPost("Follow")]
         public async Task<IActionResult> Follow(FollowDTO followDto)

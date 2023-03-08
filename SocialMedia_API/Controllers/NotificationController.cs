@@ -36,7 +36,11 @@ namespace SocialMedia_API.Controllers
                 notificationDTO.Post = await postService.GetPostDtoById(item.PostId);
                 notificationDTO.Username = user.FirstName +" " + user.LastName;
                 notificationDTO.UserImg = user.Images;
-                notificationDTOs.Add(notificationDTO);
+                if (notificationDTO.Post != null)
+                {
+                     notificationDTOs.Add(notificationDTO);
+
+                }
             }
            
             return Ok(notificationDTOs.OrderByDescending(n=>n.Notification.CreatedTime));
