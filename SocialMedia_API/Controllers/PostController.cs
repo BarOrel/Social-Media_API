@@ -39,7 +39,6 @@ namespace SocialMedia_API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPost(Post post)
         {
-            post.CreatedTime= DateTime.Now;
             await postRepository.Insert(post);
             return Ok(post);
         }

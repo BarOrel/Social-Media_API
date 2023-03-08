@@ -137,23 +137,27 @@ namespace SocialMedia_API.Controllers
         }
 
        
-        [HttpGet("Friends/{UserId}")]
-        public async Task<IActionResult> GetFriends(string UserId)
+        [HttpGet("Following/{UserId}")]
+        public async Task<IActionResult> GetFollowing(string UserId)
         {
+            List<UserDTO> userDTOs = new();
             var res = await followRepository.GetAll();
-            var mutualFollowers = res
-             .Where(f1 => f1.FollowingId == UserId)
-       .Join(res,
-           f1 => f1.FollowerId,
-           f2 => f2.FollowingId,
-           (f1, f2) => f2.FollowerId)
-       .Join(res,
-           f2 => f2,
-           f3 => f3.FollowingId,
-           (f2, f3) => f3.FollowerId)
-       .Distinct()
-       .ToList();
-            return Ok(mutualFollowers);
+            res = res.Where(n => n.FollowerId ==  UserId);
+            foreach (var item in res)
+            {
+                var User = await userManger.FindByIdAsync(item.FollowingId);
+                UserDTO userdto = new()
+                {
+                    Fullname = User.FirstName + " " + User.LastName,
+                    UserName = User.UserName,
+                    ImgUrl = User.Images,
+                    UserId = User.Id,
+
+                };
+                userDTOs.Add(userdto);
+            }
+
+            return Ok(userDTOs);
         }
 
 
