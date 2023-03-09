@@ -28,7 +28,6 @@ namespace SocialMedia_API.Services.PostService
             var user = await  userManger.FindByIdAsync(res.UserId);
 
             post.Post = res;
-            //post.Comments = commentRepository.GetAll().Result.Where(n => n.PostId == res.Id).ToList();
             var comments = commentRepository.GetAll().Result.Where(n => n.PostId == res.Id).ToList();
             foreach (var item in comments)
             {
@@ -56,5 +55,71 @@ namespace SocialMedia_API.Services.PostService
             }
             return post;
         }
+
+        public async Task<List<PostDTO>> GetExplore() 
+        {
+            List<PostDTO> Posts = new();
+            var res = await postRepository.GetAll();
+            foreach (var item in res)
+            {
+                List<CommentDTO> Comments = new();
+                var user = await userManger.FindByIdAsync(item.UserId);
+                PostDTO post = new()
+                {
+                    Post = item,
+                    CommentsCounter = commentRepository.GetAll().Result.Where(n => n.PostId == item.Id).Count(),
+                    LikesCounter = likeRepository.GetAll().Result.Where(n => n.PostId == item.Id).Count(),
+                };
+
+                var comments = commentRepository.GetAll().Result.Where(n => n.PostId == item.Id).ToList();
+                foreach (var comment in comments)
+                {
+                    var commentUser = await userManger.FindByIdAsync(comment.UserId);
+                    CommentDTO dtocomment = new();
+                    dtocomment.Comment = comment;
+                    if (commentUser != null)
+                    {
+                        dtocomment.UserFullName = $"{commentUser.FirstName} {commentUser.LastName}";
+                        dtocomment.UserImg = commentUser.Images;
+                    }
+
+                    Comments.Add(dtocomment);
+                }
+
+                post.Comments = Comments.OrderByDescending(n => n.Comment.CreatedTime).ToList();
+
+                if (user != null)
+                {
+                    post.UserImg = user.Images;
+                    post.UserId = item.UserId;
+                    post.FullName = $"{user.FirstName} {user.LastName}";
+                }
+
+                Posts.Add(post);
+            }
+
+            return Posts;
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }
