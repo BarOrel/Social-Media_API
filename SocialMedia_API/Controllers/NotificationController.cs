@@ -32,19 +32,18 @@ namespace SocialMedia_API.Controllers
             {
                 NotificationDTO notificationDTO = new();
                 notificationDTO.Notification = item;
+                
                 var user = await userManger.FindByIdAsync(notificationDTO.Notification.NotifierId);
                 notificationDTO.Post = await postService.GetPostDtoById(item.PostId);
                 notificationDTO.Username = user.FirstName +" " + user.LastName;
                 notificationDTO.UserImg = user.Images;
+                
                 if (notificationDTO.Post != null)
-                {
                      notificationDTOs.Add(notificationDTO);
-
-                }
+                 
             }
            
             return Ok(notificationDTOs.OrderByDescending(n=>n.Notification.CreatedTime));
-            
         }
 
         [HttpPost]
@@ -52,9 +51,6 @@ namespace SocialMedia_API.Controllers
         {
             await notificationRepository.Insert(notification);
             return Ok(notification);
-           
-
-
         }
     }
 }
