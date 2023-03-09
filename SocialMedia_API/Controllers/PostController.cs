@@ -104,45 +104,5 @@ namespace SocialMedia_API.Controllers
             return Ok(Posts.OrderByDescending(n=>n.Post.CreatedTime));
         }
 
-        [HttpPost("Like")]
-        public async Task<IActionResult> AddLike(Like like)
-        {
-            var allLikes = await likeRepository.GetAll();
-            var les = allLikes.Any(n => n.UserId == like.UserId && n.PostId == like.PostId);
-            if (les == false)
-            {
-                Notification notification = new()
-                {
-                    NotifierId = like.UserId,
-                    PostId= like.PostId,
-                    Type = NotificationType.Like   
-                };
-                notification.UserId = postRepository.GetById(like.PostId).Result.UserId;
-                
-                if (notification.UserId != notification.NotifierId)
-                    await notificationRepository.Insert(notification);
-                     
-                await likeRepository.Insert(like);
-                return Ok(true);
-
-            }
-            var Liked = allLikes.Where(n => n.UserId == like.UserId && n.PostId == like.PostId).FirstOrDefault();
-            await likeRepository.Delete(Liked);
-
-            return Ok(false);
-        }
-
-        [HttpPost("Like/isLiked")]
-        public async Task<IActionResult> IsLiked(Like like)
-        {
-            var allLikes = await likeRepository.GetAll();
-            var Liked = allLikes.Where(n => n.UserId == like.UserId && n.PostId == like.PostId).FirstOrDefault();
-            if(Liked != null)
-            {
-                 return Ok(true);
-
-            }
-            return Ok(false);
-        }
     }
 }
