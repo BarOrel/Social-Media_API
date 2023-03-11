@@ -23,6 +23,7 @@ namespace SocialMedia_API.Controllers
             this.postService = postService;
         }
 
+
         [HttpGet("{UserId}")]
         public async Task<IActionResult> GetNotifications(string UserId)
         {
